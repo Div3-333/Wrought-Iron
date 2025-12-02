@@ -375,7 +375,17 @@ def interact(ctx: typer.Context):
                 cmd_name = cmd_select.value
                 
                 cmd_parts = cmd_name.split()
-                full_cmd = [sys.executable, "-m", "wrought_iron.main", module] + cmd_parts
+
+                # --- CRITICAL FIX START ---
+                # Check if running as compiled executable (Frozen) or Python script
+                if getattr(sys, 'frozen', False):
+                    # In the installed app, sys.executable is the 'wi.exe' itself
+                    # We just call it directly: wi [module] [command]
+                    full_cmd = [sys.executable, module] + cmd_parts
+                else:
+                    # In development, we use the python interpreter
+                    full_cmd = [sys.executable, "-m", "wrought_iron.main", module] + cmd_parts
+                # --- CRITICAL FIX END ---
                 
                 args_def = REGISTRY[module][cmd_name]
                 for arg in args_def:
