@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wrought-iron"
+version = "1.0.0"
+description = "The Military-Grade, Air-Gapped Data Foundry"
+dependencies = [
+    "typer[all]",
+    "pandas",
+    "textual",
+    "polars",
+    "scikit-learn",
+    "rapidfuzz",
+    "presidio-analyzer",
+    "presidio-anonymizer",
+    "plotext",
+    "sweetviz",
+    "cryptography",
+    "reportlab",
+    "numexpr",
+    "scipy"
+]
+
+[project.scripts]
+wi = "wrought_iron.main:app"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["wrought_iron*"]

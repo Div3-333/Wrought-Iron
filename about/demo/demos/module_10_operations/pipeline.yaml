@@ -1,0 +1,7 @@
+
+name: "Daily Maintenance"
+steps:
+  - name: "Vacuum DB"
+    command: "echo Vacuuming..."
+  - name: "Backup"
+    command: "echo Backing up..."
