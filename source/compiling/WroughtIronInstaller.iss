@@ -22,7 +22,7 @@ Source: "dist\wrought_iron\*"; DestDir: "{app}"; Flags: ignoreversion recursesub
 Name: "addtopath"; Description: "Add Wrought Iron to system PATH"; GroupDescription: "Additional tasks:"; Flags: unchecked
 
 [Icons]
-Name: "{group}\Wrought Iron"; Filename: "{app}\wrought_iron.exe"
+Name: "{group}\Wrought Iron"; Filename: "{app}\wi.exe"
 
 [Code]
 const
