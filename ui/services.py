@@ -2,6 +2,7 @@ import sqlite3
 import pandas as pd
 import json
 import sys
+import os
 import subprocess
 from wrought_iron.cli.utils import _get_active_db
 from pathlib import Path
@@ -118,7 +119,7 @@ def run_cli_command(module_name: str, command_name: str, args: dict):
     Executes a Wrought Iron CLI command via subprocess.
     Constructs: python src/main.py <module_name> <command_name> [args]
     """
-    cmd = [sys.executable, "src/main.py", module_name]
+    cmd = [sys.executable, "-X", "utf8", "src/main.py", module_name]
     
     # Handle subcommand nesting like 'view save' -> module: collab, command: 'view save'
     # Actually, my CLI structure in main.py is: app.add_typer(collab.app, name="collab")
@@ -153,11 +154,17 @@ def run_cli_command(module_name: str, command_name: str, args: dict):
             cmd.append(str(value))
 
     try:
+        # Set environment to force UTF-8 for CLI output
+        env = os.environ.copy()
+        env["PYTHONIOENCODING"] = "utf-8"
+        
         # Run command from project root
         result = subprocess.run(
             cmd, 
             capture_output=True, 
             text=True, 
+            encoding='utf-8',
+            env=env,
             cwd=str(Path(__file__).parent.parent) # Go up to repo root
         )
         return {
