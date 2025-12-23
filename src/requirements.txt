@@ -1,0 +1,16 @@
+typer[all]
+pandas
+textual
+polars
+duckdb
+scikit-learn
+rapidfuzz
+presidio-analyzer
+presidio-anonymizer
+plotext
+sweetviz
+cryptography
+reportlab
+numexpr
+
+pyarrow
