@@ -2,28 +2,47 @@
 
 {% block content %}
 <div class="container-fluid">
-    <h2 class="mb-4">Data Explorer</h2>
-
-    {% if error %}
-    <div class="alert alert-danger">{{ error }}</div>
-    {% endif %}
-
-    <div class="row">
-        {% for table in tables %}
-        <div class="col-md-4 col-lg-3 mb-4">
-            <div class="card h-100 text-center hover-card">
-                <div class="card-body d-flex flex-column justify-content-center align-items-center">
-                    <div class="mb-3 rounded-circle bg-dark d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                        <i class="fas fa-table fa-2x text-primary"></i>
-                    </div>
-                    <h5 class="card-title">{{ table }}</h5>
-                    <a href="{% url 'table_detail' table %}" class="btn btn-outline-primary mt-3 stretched-link">View Data</a>
-                </div>
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="page-title animate__animated animate__fadeInDown">Data Explorer</h1>
+            <p class="text-muted animate__animated animate__fadeInUp">Browse tables in your active database</p>
+        </div>
+        <div class="animate__animated animate__fadeIn">
+            <div class="input-group glass-panel p-1">
+                <span class="input-group-text bg-transparent border-0"><i class="fas fa-search text-muted"></i></span>
+                <input type="text" class="form-control bg-transparent border-0 shadow-none" placeholder="Filter tables...">
             </div>
         </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger animate__animated animate__shakeX">{{ error }}</div>
+    {% endif %}
+
+    <div class="row g-4">
+        {% for table in tables %}
+        <div class="col-md-4 col-lg-3 col-xl-2 animate__animated animate__fadeInUp" style="animation-delay: {{ forloop.counter0|add:2 }}00ms;">
+            <a href="{% url 'table_detail' table %}" class="text-decoration-none">
+                <div class="glass-card text-center p-4 h-100 position-relative">
+                    <div class="mb-3 d-inline-block p-3 rounded-circle" style="background: rgba(233, 196, 106, 0.2);">
+                        <i class="fas fa-table fa-2x" style="color: var(--accent-color);"></i>
+                    </div>
+                    <h5 class="card-title text-dark fw-bold mb-2">{{ table }}</h5>
+                    <small class="text-muted">Click to view data</small>
+                    
+                    <div class="position-absolute top-0 end-0 p-3">
+                         <i class="fas fa-external-link-alt text-muted opacity-25"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
         {% empty %}
-        <div class="col-12">
-            <div class="alert alert-info">No tables found in the active database.</div>
+        <div class="col-12 text-center py-5">
+            <div class="glass-card p-5 d-inline-block">
+                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                <h3>No Tables Found</h3>
+                <p class="text-muted">The active database seems to be empty.</p>
+            </div>
         </div>
         {% endfor %}
     </div>

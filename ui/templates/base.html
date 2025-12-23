@@ -1,51 +1,100 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wrought-Iron Foundry</title>
+    
+    <!-- Google Fonts: Outfit (Headings) & Inter (Body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
     <!-- FontAwesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'styles.css' %}">
 </head>
 <body>
 
-    <!-- Sidebar -->
-    <div class="sidebar d-flex flex-column">
-        <div class="brand-logo">
-            <i class="fas fa-cubes me-2"></i>WROUGHT IRON
-        </div>
-        <ul class="nav nav-pills flex-column mb-auto mt-3">
-            <li class="nav-item">
-                <a href="{% url 'index' %}" class="nav-link {% if page == 'dashboard' %}active{% endif %}">
-                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{% url 'tables' %}" class="nav-link {% if page == 'tables' %}active{% endif %}">
-                    <i class="fas fa-table me-2"></i> Data Explorer
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{% url 'query' %}" class="nav-link {% if page == 'query' %}active{% endif %}">
-                    <i class="fas fa-terminal me-2"></i> SQL Console
-                </a>
-            </li>
-        </ul>
-        <div class="p-3 border-top border-secondary">
-            <small class="text-muted">v1.0.0 - Air-Gapped Mode</small>
-        </div>
+    <div class="app-container">
+        <!-- Floating Glass Sidebar -->
+        <nav class="sidebar glass-panel animate__animated animate__fadeInLeft">
+            <div class="brand-logo">
+                <i class="fas fa-leaf me-2 text-gradient-primary"></i>
+                <span>WROUGHT IRON</span>
+            </div>
+            
+            <ul class="nav flex-column mt-4">
+                <li class="nav-item">
+                    <a href="{% url 'index' %}" class="nav-link {% if page == 'dashboard' %}active{% endif %}">
+                        <i class="fas fa-home-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                
+                <li class="nav-header text-muted small fw-bold text-uppercase mt-3 mb-2 px-3">Core</li>
+
+                <li class="nav-item">
+                    <a href="{% url 'module_view' 'connect' %}" class="nav-link {% if page == 'connect' %}active{% endif %}">
+                        <i class="fas fa-plug"></i>
+                        <span>Connect</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'tables' %}" class="nav-link {% if page == 'tables' %}active{% endif %}">
+                        <i class="fas fa-layer-group"></i>
+                        <span>Explorer</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'query' %}" class="nav-link {% if page == 'query' %}active{% endif %}">
+                        <i class="fas fa-code"></i>
+                        <span>SQL Studio</span>
+                    </a>
+                </li>
+
+                <li class="nav-header text-muted small fw-bold text-uppercase mt-3 mb-2 px-3">Modules</li>
+
+                {% for mod in modules %}
+                    {% if mod != 'connect' and mod != 'query' %}
+                    <li class="nav-item">
+                        <a href="{% url 'module_view' mod %}" class="nav-link {% if page == mod %}active{% endif %}">
+                            <i class="fas fa-box"></i>
+                            <span class="text-capitalize">{{ mod }}</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <span class="pulse-dot"></span>
+                    <small>System Active</small>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div class="content-wrapper animate__animated animate__fadeIn animate__delay-0.5s">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </main>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        {% block content %}
-        {% endblock %}
-    </div>
+    <!-- Include File Browser Component -->
+    {% include "components/file_browser.html" %}
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

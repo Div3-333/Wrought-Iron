@@ -3,31 +3,34 @@
 
 {% block content %}
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><span class="text-muted">Table:</span> {{ table_name }}</h2>
-        <a href="{% url 'tables' %}" class="btn btn-secondary"><i class="fas fa-arrow-left me-2"></i>Back to Tables</a>
+    <div class="d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeInDown">
+        <div class="d-flex align-items-center">
+            <a href="{% url 'tables' %}" class="btn btn-sm btn-light rounded-circle shadow-sm me-3" style="width: 40px; height: 40px; display: grid; place-items: center;">
+                <i class="fas fa-arrow-left text-muted"></i>
+            </a>
+            <div>
+                <h2 class="mb-0 fw-bold">{{ table_name }}</h2>
+                <small class="text-muted">Table Inspection</small>
+            </div>
+        </div>
+        
+        <div class="btn-group glass-panel p-1" role="group">
+            <button class="btn btn-sm btn-light rounded-pill px-4 active" id="data-tab-btn" data-bs-toggle="tab" data-bs-target="#data" type="button">Data</button>
+            <button class="btn btn-sm btn-transparent rounded-pill px-4" id="schema-tab-btn" data-bs-toggle="tab" data-bs-target="#schema" type="button">Schema</button>
+        </div>
     </div>
 
     {% if error %}
     <div class="alert alert-danger">{{ error }}</div>
     {% endif %}
 
-    <ul class="nav nav-tabs mb-3" id="tableTab" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="data-tab" data-bs-toggle="tab" data-bs-target="#data" type="button" role="tab">Data Preview</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="schema-tab" data-bs-toggle="tab" data-bs-target="#schema" type="button" role="tab">Schema</button>
-        </li>
-    </ul>
-
-    <div class="tab-content" id="tableTabContent">
+    <div class="tab-content animate__animated animate__fadeInUp" id="tableTabContent">
         <!-- Data Tab -->
         <div class="tab-pane fade show active" id="data" role="tabpanel">
-            <div class="card">
-                <div class="card-body p-0">
+            <div class="glass-card p-0">
+                <div class="table-container">
                     <div class="table-responsive">
-                        <table class="table table-hover table-striped mb-0">
+                        <table class="table table-hover mb-0">
                             <thead>
                                 <tr>
                                     {% for col in columns %}
@@ -45,7 +48,7 @@
                                     {% endfor %}
                                 </tr>
                                 {% empty %}
-                                <tr><td colspan="{{ columns|length }}" class="text-center p-3">No data available</td></tr>
+                                <tr><td colspan="{{ columns|length }}" class="text-center p-5 text-muted">No data available</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -56,39 +59,44 @@
 
         <!-- Schema Tab -->
         <div class="tab-pane fade" id="schema" role="tabpanel">
-            <div class="card">
-                <div class="card-body">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>CID</th>
-                                <th>Name</th>
-                                <th>Type</th>
-                                <th>Not Null</th>
-                                <th>Default</th>
-                                <th>PK</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for col in schema %}
-                            <tr>
-                                <td>{{ col.cid }}</td>
-                                <td>{{ col.name }}</td>
-                                <td><span class="badge bg-info text-dark">{{ col.type }}</span></td>
-                                <td>
-                                    {% if col.notnull %}<i class="fas fa-check text-success"></i>{% else %}<span class="text-muted">-</span>{% endif %}
-                                </td>
-                                <td>{{ col.default|default:"-" }}</td>
-                                <td>
-                                    {% if col.pk %}<i class="fas fa-key text-warning"></i>{% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            <div class="glass-card p-4">
+                <div class="row">
+                    {% for col in schema %}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="p-3 bg-white rounded shadow-sm border border-light h-100">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="fw-bold text-dark">{{ col.name }}</span>
+                                <span class="badge bg-light text-dark border">{{ col.cid }}</span>
+                            </div>
+                            <div class="d-flex flex-column gap-1">
+                                <span class="badge badge-primary align-self-start">{{ col.type }}</span>
+                                <div class="small text-muted mt-2">
+                                    {% if col.pk %}<i class="fas fa-key text-warning me-1"></i> Primary Key<br>{% endif %}
+                                    {% if col.notnull %}<i class="fas fa-asterisk text-danger me-1"></i> Required<br>{% endif %}
+                                    {% if col.default %}<i class="fas fa-tag text-info me-1"></i> Default: {{ col.default }}{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // Simple script to toggle active class on custom tab buttons
+    const triggerTabList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tab"]'))
+    triggerTabList.forEach(function (triggerEl) {
+        triggerEl.addEventListener('click', function (event) {
+            triggerTabList.forEach(el => {
+                el.classList.remove('btn-light', 'active');
+                el.classList.add('btn-transparent');
+            });
+            event.target.classList.remove('btn-transparent');
+            event.target.classList.add('btn-light', 'active');
+        })
+    })
+</script>
 {% endblock %}

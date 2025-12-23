@@ -6,4 +6,6 @@ urlpatterns = [
     path('tables/', views.tables, name='tables'),
     path('tables/<str:table_name>/', views.table_detail, name='table_detail'),
     path('query/', views.query, name='query'),
+    path('module/<str:module_name>/', views.module_view, name='module_view'),
+    path('api/files/', views.file_browser_api, name='file_browser_api'),
 ]

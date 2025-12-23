@@ -1,6 +1,8 @@
 import sqlite3
 import pandas as pd
 import json
+import sys
+import subprocess
 from wrought_iron.cli.utils import _get_active_db
 from pathlib import Path
 
@@ -110,3 +112,63 @@ def get_db_stats():
         "name": p.name,
         "status": "Active"
     }
+
+def run_cli_command(module_name: str, command_name: str, args: dict):
+    """
+    Executes a Wrought Iron CLI command via subprocess.
+    Constructs: python src/main.py <module_name> <command_name> [args]
+    """
+    cmd = [sys.executable, "src/main.py", module_name]
+    
+    # Handle subcommand nesting like 'view save' -> module: collab, command: 'view save'
+    # Actually, my CLI structure in main.py is: app.add_typer(collab.app, name="collab")
+    # And inside collab.py: app.add_typer(view_app, name="view")
+    # So the CLI args are: python src/main.py collab view save ...
+    
+    parts = command_name.split() # e.g. "view save" -> ["view", "save"]
+    cmd.extend(parts)
+    
+    for key, value in args.items():
+        if not value:
+            continue
+            
+        # Boolean flags (checkboxes)
+        if value is True or value == "on":
+            # Check if key starts with --, otherwise append it
+            flag = key if key.startswith("-") else f"--{key}"
+            cmd.append(flag)
+            continue
+            
+        # Positional arguments (don't have --name)
+        # BUT in my config I named them.
+        # If the key in args dict doesn't start with dash, it's positional?
+        # WAIT. My config keys might be "path" or "--force".
+        # If key is "path" (no dash), it's positional.
+        # If key is "--force" (dashes), it's a flag/option.
+        
+        if key.startswith("-"):
+            cmd.append(key)
+            cmd.append(str(value))
+        else:
+            cmd.append(str(value))
+
+    try:
+        # Run command from project root
+        result = subprocess.run(
+            cmd, 
+            capture_output=True, 
+            text=True, 
+            cwd=str(Path(__file__).parent.parent) # Go up to repo root
+        )
+        return {
+            "success": result.returncode == 0,
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+            "command": " ".join(cmd)
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "stderr": str(e),
+            "command": " ".join(cmd)
+        }
