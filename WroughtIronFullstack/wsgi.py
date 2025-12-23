@@ -8,6 +8,10 @@ https://docs.djangoproject.com/en/5.1/howto/deployment/wsgi/
 """
 
 import os
+import sys
+
+# Add src to python path to allow imports from wrought_iron
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'src'))
 
 from django.core.wsgi import get_wsgi_application
 

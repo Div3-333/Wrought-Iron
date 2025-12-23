@@ -1,9 +1,67 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <h1>Wrought-Iron</h1>
-    <p>Interactive visualisation platform</p>
+<div class="container-fluid">
+    <h2 class="mb-4">Dashboard</h2>
 
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i> {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- Stats Card -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card text-white bg-primary mb-3" style="background: linear-gradient(45deg, #0d6efd, #0043a8);">
+                <div class="card-header">Active Database</div>
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-database me-2"></i> {{ stats.name|default:"Not Connected" }}</h5>
+                    <p class="card-text">
+                        <strong>Size:</strong> {{ stats.size|default:"-" }}<br>
+                        <strong>Path:</strong> {{ stats.path|default:"-" }}<br>
+                        <strong>Status:</strong> {{ stats.status|default:"Inactive" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Info Card -->
+         <div class="col-md-6 col-lg-8">
+            <div class="card h-100">
+                <div class="card-header">
+                    <i class="fas fa-history me-2"></i> Recent Activity (Audit Log)
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0 text-white">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in audit_log %}
+                                <tr>
+                                    <td>{{ log.timestamp }}</td>
+                                    <td>{{ log.user }}</td>
+                                    <td><span class="badge bg-secondary">{{ log.action }}</span></td>
+                                    <td class="text-truncate" style="max-width: 200px;">{{ log.details }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-3">No activity recorded.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

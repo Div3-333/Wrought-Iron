@@ -1,19 +1,54 @@
 {% load static %}
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wrought-Iron</title>
+    <title>Wrought-Iron Foundry</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'styles.css' %}">
 </head>
 <body>
-    <!-- nav bar here -->
-    {% block content %}
-    {% endblock %}
 
+    <!-- Sidebar -->
+    <div class="sidebar d-flex flex-column">
+        <div class="brand-logo">
+            <i class="fas fa-cubes me-2"></i>WROUGHT IRON
+        </div>
+        <ul class="nav nav-pills flex-column mb-auto mt-3">
+            <li class="nav-item">
+                <a href="{% url 'index' %}" class="nav-link {% if page == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'tables' %}" class="nav-link {% if page == 'tables' %}active{% endif %}">
+                    <i class="fas fa-table me-2"></i> Data Explorer
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'query' %}" class="nav-link {% if page == 'query' %}active{% endif %}">
+                    <i class="fas fa-terminal me-2"></i> SQL Console
+                </a>
+            </li>
+        </ul>
+        <div class="p-3 border-top border-secondary">
+            <small class="text-muted">v1.0.0 - Air-Gapped Mode</small>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'main.js' %}"></script>
 </body>
-
 </html>
