@@ -2,6 +2,22 @@
 {% load custom_filters %}
 
 {% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/material.min.css">
+<style>
+.CodeMirror {
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    height: 100%;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+.CodeMirror-gutters {
+    background-color: #263238 !important; /* material theme background */
+    border-right: 1px solid #545454;
+}
+</style>
+
 <div class="container-fluid h-100 d-flex flex-column" style="overflow-y: auto;">
     <h1 class="page-title animate__animated animate__fadeInDown mb-4">SQL Studio</h1>
 
@@ -14,7 +30,7 @@
                 <form method="post" class="d-flex flex-column flex-grow-1">
                     {% csrf_token %}
                     <div class="mb-3 flex-grow-1">
-                        <textarea name="sql" class="sql-editor h-100" placeholder="SELECT * FROM table_name LIMIT 10;">{{ sql|default:"" }}</textarea>
+                        <textarea name="sql" id="sql-editor" class="sql-editor h-100" placeholder="SELECT * FROM table_name LIMIT 10;">{{ sql|default:"" }}</textarea>
                     </div>
                     <div class="d-grid mb-4">
                         <button type="submit" class="btn btn-primary btn-lg shadow-sm">
@@ -117,9 +133,29 @@
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/sql/sql.min.js"></script>
 <script>
+    var editor = CodeMirror.fromTextArea(document.getElementById("sql-editor"), {
+        lineNumbers: true,
+        mode: "text/x-sql",
+        theme: "material",
+        indentWithTabs: true,
+        smartIndent: true,
+        matchBrackets: true,
+        autofocus: true,
+        lineWrapping: true,
+    });
+
+    // The form submission needs to be handled to save the editor content
+    // to the textarea. CodeMirror does this automatically, but this ensures it.
+    editor.on('change', cm => {
+        cm.save();
+    });
+
     function insertSql(sql) {
-        document.querySelector('textarea[name="sql"]').value = sql;
+        editor.setValue(sql);
+        editor.focus();
     }
 </script>
 {% endblock %}

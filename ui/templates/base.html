@@ -21,6 +21,7 @@
 <body data-theme="nature">
 
     <div class="app-container">
+        {% if not hide_sidebar %}
         <!-- Sidebar -->
         <nav class="sidebar glass-panel animate__animated animate__fadeInLeft">
             <div class="brand-logo justify-content-between">
@@ -81,15 +82,42 @@
                 {% endfor %}
             </ul>
 
+            <ul class="nav flex-column mt-2">
+                {% if user.is_authenticated %}
+                <li class="nav-header text-muted small fw-bold text-uppercase mt-3 mb-2 px-3">Account</li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-user-circle"></i>
+                        <span>{{ user.username }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'logout' %}" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="nav-header text-muted small fw-bold text-uppercase mt-3 mb-2 px-3">Account</li>
+                <li class="nav-item">
+                    <a href="{% url 'login' %}" class="nav-link {% if page == 'login' %}active{% endif %}">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Login</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+
             <div class="sidebar-footer">
                 <div class="status-indicator">
                     <span class="pulse-dot"></span>
-                    <small>System Active</small>
+                    <small class="status">System Active</small>
                 </div>
             </div>
         </nav>
+        {% endif %}
 
-        <main class="main-content">
+        <main class="main-content {% if hide_sidebar %}no-sidebar-margin{% endif %}">
             <div class="content-wrapper animate__animated animate__fadeIn animate__delay-0.5s">
                 {% block content %}
                 {% endblock %}

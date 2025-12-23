@@ -1,30 +1,53 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
+from django.contrib.auth.views import LoginView
+from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
 from . import services
 from .module_config import MODULE_CONFIG
 import json
 import os
 
 def index(request):
-    try:
-        stats = services.get_db_stats()
-        audit_log = services.get_audit_log()
-        table_counts = services.get_table_counts()
-        context = {
-            'stats': stats,
-            'audit_log': audit_log,
-            'table_counts': table_counts,
-            'page': 'dashboard',
-            'modules': MODULE_CONFIG.keys()
-        }
-    except Exception as e:
-        context = {
-            'error': str(e), 
-            'page': 'dashboard', 
-            'modules': MODULE_CONFIG.keys()
-        }
-    return render(request, 'index.html', context)
+    if request.user.is_authenticated:
+        # Content of the old dashboard view
+        try:
+            stats = services.get_db_stats()
+            audit_log = services.get_audit_log()
+            table_counts = services.get_table_counts()
+            context = {
+                'stats': stats,
+                'audit_log': audit_log,
+                'table_counts': table_counts,
+                'page': 'dashboard',
+                'modules': MODULE_CONFIG.keys()
+            }
+        except Exception as e:
+            context = {
+                'error': str(e), 
+                'page': 'dashboard', 
+                'modules': MODULE_CONFIG.keys()
+            }
+        return render(request, 'index.html', context)
+    else:
+        # Content of the old landing view
+        return render(request, 'landing.html', {'page': 'landing', 'hide_sidebar': True})
 
+class CustomLoginView(LoginView):
+    template_name = 'login.html'
+    redirect_authenticated_user = True
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page'] = 'login'
+        context['hide_sidebar'] = True
+        return context
+
+def logout_view(request):
+    logout(request)
+    return redirect('index') # Redirect to the new unified index view
+
+@login_required
 def tables(request):
     try:
         table_list = services.get_tables()
@@ -41,6 +64,7 @@ def tables(request):
         }
     return render(request, 'tables.html', context)
 
+@login_required
 def table_detail(request, table_name):
     try:
         data, columns = services.get_table_preview(table_name)
@@ -61,6 +85,7 @@ def table_detail(request, table_name):
         }
     return render(request, 'table_detail.html', context)
 
+@login_required
 def query(request):
     context = {
         'page': 'query',
@@ -72,12 +97,18 @@ def query(request):
             result = services.execute_custom_sql(sql)
             context['result'] = result
             context['sql'] = sql
+    # Pre-fetch schemas for table selectors
+    try:
+        context['schemas_json'] = json.dumps(services.get_all_table_schemas())
+    except:
+        context['schemas_json'] = json.dumps({})
     return render(request, 'query.html', context)
 
+@login_required
 def module_view(request, module_name):
     config = MODULE_CONFIG.get(module_name)
     if not config:
-        return redirect('index')
+        return redirect('index') # Redirect to the new unified index view
     
     # Fetch dynamic data
     try:

@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .hero {
+        height: 80vh;
+        display: flex;
+        align-items: center;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.1); /* Using generic transparent white for now */
+        border-radius: var(--radius-lg);
+        margin-bottom: 5rem;
+    }
+    .hero h1 {
+        font-size: 4.5rem;
+        text-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .feature-icon {
+        font-size: 3rem;
+        background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .module-card {
+        background: var(--card-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-md);
+        padding: 2rem;
+        text-align: left;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .module-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    .module-card h5 {
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    }
+    .module-card p {
+        font-size: 0.95rem;
+        color: var(--text-muted);
+    }
+</style>
+
+<div class="container-fluid animate__animated animate__fadeIn">
+    <!-- Hero Section -->
+    <div class="hero mx-auto" style="max-width: 1200px;">
+        <div class="container">
+            <h1 class="display-3 font-heading fw-bold">Wrought Iron: The Air-Gapped Data Foundry</h1>
+            <p class="lead text-muted col-lg-8 mx-auto">
+                A modern, extensible platform for secure data interaction, analysis, and visualization in air-gapped environments.
+                Connect to your data, ensure integrity, run powerful queries, and build custom modules with unparalleled security and ease.
+            </p>
+            <a href="{% url 'login' %}" class="btn btn-primary btn-lg shadow-lg mt-4 px-5">
+                <i class="fas fa-sign-in-alt me-2"></i> Get Started
+            </a>
+            <a href="#key-modules" class="btn btn-outline-secondary btn-lg mt-4 ms-3 px-5">
+                <i class="fas fa-info-circle me-2"></i> Learn More
+            </a>
+        </div>
+    </div>
+
+    <!-- Overview Section - Replaced by Key Modules for detail -->
+    <div class="text-center py-5">
+        <h2 class="font-heading fw-bold mb-4">Unleash the Power of Your Air-Gapped Data</h2>
+        <p class="lead text-muted col-lg-8 mx-auto mb-5">
+            Wrought Iron provides a comprehensive suite of modules designed to handle every aspect of data management,
+            from secure infrastructure to advanced machine learning, all without external network access.
+        </p>
+    </div>
+
+    <!-- Key Modules Section -->
+    <div id="key-modules" class="row g-4 py-5 justify-content-center">
+        <!-- Infrastructure (wi connect) -->
+        <div class="col-lg-4 col-md-6">
+            <div class="module-card h-100">
+                <h5 class="fw-bold"><i class="fas fa-plug me-2"></i>Infrastructure (wi connect)</h5>
+                <p>The foundation for secure data management, handling connection lifecycle, storage optimization, and physical security. It operates directly on the file system, ideal for air-gapped environments.</p>
+            </div>
+        </div>
+        <!-- Schema Management (wi schema) -->
+        <div class="col-lg-4 col-md-6">
+            <div class="module-card h-100">
+                <h5 class="fw-bold"><i class="fas fa-sitemap me-2"></i>Schema Management (wi schema)</h5>
+                <p>Introspect, analyze, and safely evolve your database structures. Gain deep insights into column properties, relationships, and semi-structured data patterns.</p>
+            </div>
+        </div>
+        <!-- Data Exploration (wi query) -->
+        <div class="col-lg-4 col-md-6">
+            <div class="module-card h-100">
+                <h5 class="fw-bold"><i class="fas fa-search me-2"></i>Data Exploration (wi query)</h5>
+                <p>Quickly inspect, filter, search, and understand data with high-speed retrieval and powerful boolean logic operations. Get immediate insights without complex SQL.</p>
+            </div>
+        </div>
+        <!-- Analytics (wi aggregate) -->
+        <div class="col-lg-4 col-md-6">
+            <div class="module-card h-100">
+                <h5 class="fw-bold"><i class="fas fa-chart-pie me-2"></i>Analytics (wi aggregate)</h5>
+                <p>Perform robust statistical analysis and aggregations, including groupby, pivot tables, and descriptive statistics, directly within your air-gapped environment.</p>
+            </div>
+        </div>
+        <!-- Visualization (wi plot) -->
+        <div class="col-lg-4 col-md-6">
+            <div class="module-card h-100">
+                <h5 class="fw-bold"><i class="fas fa-chart-bar me-2"></i>Visualization (wi plot)</h5>
+                <p>Generate ASCII/Unicode charts directly in the terminal or save them to files. Quickly visualize data distributions, trends, and relationships even without a GUI.</p>
+            </div>
+        </div>
+        <!-- Data Wrangling (wi clean) -->
+        <div class="col-lg-4 col-md-6">
+            <div class="module-card h-100">
+                <h5 class="fw-bold"><i class="fas fa-broom me-2"></i>Data Wrangling (wi clean)</h5>
+                <p>Clean, standardize, and transform messy data into a usable format. Handle missing values, duplicates, text harmonization, and formal validation.</p>
+            </div>
+        </div>
+        <!-- Geospatial Analysis (wi geo) -->
+        <div class="col-lg-4 col-md-6">
+            <div class="module-card h-100">
+                <h5 class="fw-bold"><i class="fas fa-globe me-2"></i>Geospatial Analysis (wi geo)</h5>
+                <p>Work with location-based data including offline geocoding, distance calculations, clustering, and export to standard geospatial formats like GeoJSON.</p>
+            </div>
+        </div>
+        <!-- Machine Learning (wi ml) -->
+        <div class="col-lg-4 col-md-6">
+            <div class="module-card h-100">
+                <h5 class="fw-bold"><i class="fas fa-brain me-2"></i>Machine Learning (wi ml)</h5>
+                <p>Bring powerful predictive modeling, classification, regression, clustering, and anomaly detection capabilities directly to your air-gapped data.</p>
+            </div>
+        </div>
+        <!-- Audit & Security (wi audit) -->
+        <div class="col-lg-4 col-md-6">
+            <div class="module-card h-100">
+                <h5 class="fw-bold"><i class="fas fa-shield-alt me-2"></i>Audit & Security (wi audit)</h5>
+                <p>Ensure data integrity, track changes, protect sensitive information, and establish a verifiable chain of custody with cryptographic hashing and PII scanning.</p>
+            </div>
+        </div>
+        <!-- Operations (wi ops) -->
+        <div class="col-lg-4 col-md-6">
+            <div class="module-card h-100">
+                <h5 class="fw-bold"><i class="fas fa-cogs me-2"></i>Operations (wi ops)</h5>
+                <p>Automate maintenance, orchestrate workflows, and monitor operational status with tools for scheduling tasks, pipeline execution, and data drift detection.</p>
+            </div>
+        </div>
+        <!-- Collaboration (wi collab) -->
+        <div class="col-lg-4 col-md-6">
+            <div class="module-card h-100">
+                <h5 class="fw-bold"><i class="fas fa-users me-2"></i>Collaboration (wi collab)</h5>
+                <p>Facilitate teamwork and project management through knowledge sharing, configuration management, and project portability for air-gapped environments.</p>
+            </div>
+        </div>
+        <!-- Reporting (wi report) -->
+        <div class="col-lg-4 col-md-6">
+            <div class="module-card h-100">
+                <h5 class="fw-bold"><i class="fas fa-file-alt me-2"></i>Reporting (wi report)</h5>
+                <p>Generate comprehensive, human-readable reports and visualizations directly from your data, including EDA, comparison reports, and interactive maps, for actionable intelligence.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer with login prompt -->
+    <div class="text-center py-5 mt-5 border-top">
+        <h3 class="font-heading fw-bold mb-3">Ready to Unlock Your Data's Potential?</h3>
+        <p class="lead text-muted col-lg-6 mx-auto">
+            Experience the power and security of Wrought Iron. Log in to get started.
+        </p>
+        <a href="{% url 'login' %}" class="btn btn-primary btn-lg shadow-lg mt-3 px-5">
+            <i class="fas fa-sign-in-alt me-2"></i> Log In Now
+        </a>
+    </div>
+
+</div>
+{% endblock %}
