@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container-fluid">
+<div class="container-fluid h-100 overflow-y-auto">
     <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
             <h1 class="page-title animate__animated animate__fadeInDown">Dashboard</h1>
@@ -10,7 +10,7 @@
             </p>
         </div>
         <div class="animate__animated animate__fadeInRight">
-             <span class="badge badge-custom badge-primary">
+             <span class="badge badge-custom badge-primary p-2">
                  <i class="fas fa-clock me-1"></i> {{ audit_log.0.timestamp|slice:":10"|default:"Today" }}
              </span>
         </div>
@@ -22,8 +22,9 @@
     </div>
     {% endif %}
 
-    <div class="row g-4">
-        <!-- Stats Card: Active Database -->
+    <!-- Top Row: Stats & Quick Actions -->
+    <div class="row g-4 mb-4">
+        <!-- Active DB Stats -->
         <div class="col-md-6 col-lg-4">
             <div class="glass-card stat-card animate__animated animate__zoomIn animate__delay-0.5s h-100">
                 <div class="d-flex align-items-center mb-3">
@@ -41,39 +42,101 @@
                         <span class="fw-bold">{{ stats.size|default:"-" }}</span>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span class="text-muted"><i class="fas fa-folder me-2"></i>Path</span>
-                        <span class="text-truncate" style="max-width: 150px;" title="{{ stats.path }}">{{ stats.path|default:"-" }}</span>
+                        <span class="text-muted"><i class="fas fa-folder me-2"></i>Status</span>
+                        <span class="badge badge-custom badge-primary">{{ stats.status|default:"Inactive" }}</span>
                     </div>
-                </div>
-                
-                <div class="mt-4 pt-3 border-top border-light">
-                    <span class="badge badge-custom badge-primary">
-                        <i class="fas fa-check-circle me-1"></i> {{ stats.status|default:"Inactive" }}
-                    </span>
                 </div>
             </div>
         </div>
-        
-        <!-- Audit Log Timeline -->
-         <div class="col-md-6 col-lg-8">
-            <div class="glass-card p-4 animate__animated animate__fadeInRight animate__delay-0.7s h-100">
+
+        <!-- Quick Actions -->
+        <div class="col-md-6 col-lg-8">
+            <div class="glass-card p-4 h-100 d-flex flex-column justify-content-center animate__animated animate__fadeInRight">
+                <h5 class="mb-3 text-muted fw-bold text-uppercase"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <a href="{% url 'module_view' 'connect' %}" class="btn btn-light w-100 h-100 p-3 shadow-sm d-flex flex-column align-items-center justify-content-center border-0">
+                            <i class="fas fa-plug fa-2x text-primary mb-2"></i>
+                            <span>Connect DB</span>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{% url 'module_view' 'schema' %}" class="btn btn-light w-100 h-100 p-3 shadow-sm d-flex flex-column align-items-center justify-content-center border-0">
+                            <i class="fas fa-microscope fa-2x text-warning mb-2"></i>
+                            <span>Inspect</span>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{% url 'module_view' 'plot' %}" class="btn btn-light w-100 h-100 p-3 shadow-sm d-flex flex-column align-items-center justify-content-center border-0">
+                            <i class="fas fa-chart-bar fa-2x text-success mb-2"></i>
+                            <span>Visualize</span>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a href="{% url 'query' %}" class="btn btn-light w-100 h-100 p-3 shadow-sm d-flex flex-column align-items-center justify-content-center border-0">
+                            <i class="fas fa-terminal fa-2x text-danger mb-2"></i>
+                            <span>Query</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Row: Table Stats & Audit Log -->
+    <div class="row g-4">
+        <!-- Table Row Counts -->
+        <div class="col-md-5">
+            <div class="glass-card p-4 h-100 animate__animated animate__fadeInUp">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0"><i class="fas fa-table me-2 text-info"></i>Table Statistics</h5>
+                    <span class="badge bg-light text-dark">{{ table_counts|length }} Tables</span>
+                </div>
+                <div class="table-container border-0 shadow-none p-0" style="max-height: 350px; overflow-y: auto;">
+                    <table class="table table-hover mb-0">
+                        <thead class="sticky-top bg-white">
+                            <tr>
+                                <th>Table</th>
+                                <th class="text-end">Rows</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in table_counts %}
+                            <tr>
+                                <td class="fw-bold text-primary">{{ t.name }}</td>
+                                <td class="text-end font-monospace">{{ t.count }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="text-center text-muted">No tables found</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audit Log -->
+         <div class="col-md-7">
+            <div class="glass-card p-4 h-100 animate__animated animate__fadeInUp animate__delay-0.2s">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="mb-0"><i class="fas fa-stream me-2 text-warning"></i>Recent Activity</h4>
-                    <button class="btn btn-sm btn-secondary rounded-pill">View All</button>
+                    <h5 class="mb-0"><i class="fas fa-stream me-2 text-warning"></i>Recent Activity</h5>
+                    <a href="{% url 'module_view' 'audit' %}" class="btn btn-sm btn-outline-secondary rounded-pill">View Full Log</a>
                 </div>
                 
-                <div class="timeline-container" style="max-height: 400px; overflow-y: auto;">
+                <div class="timeline-container" style="max-height: 350px; overflow-y: auto;">
                     <ul class="timeline">
                         {% for log in audit_log %}
                         <li class="timeline-item">
                             <div class="timeline-marker"></div>
-                            <div class="timeline-content">
+                            <div class="timeline-content py-2">
                                 <div class="d-flex justify-content-between mb-1">
                                     <span class="fw-bold text-dark">{{ log.user }}</span>
                                     <small class="text-muted">{{ log.timestamp|slice:"11:19" }}</small>
                                 </div>
-                                <div class="text-primary small fw-bold mb-1">{{ log.action }}</div>
-                                <div class="text-muted small">{{ log.details }}</div>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-light text-dark border me-2">{{ log.action }}</span>
+                                    <span class="text-muted small text-truncate">{{ log.details }}</span>
+                                </div>
                             </div>
                         </li>
                         {% empty %}

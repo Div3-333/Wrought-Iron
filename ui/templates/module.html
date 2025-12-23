@@ -55,7 +55,7 @@
                             </div>
                         </div>
 
-                        <form method="post">
+                        <form method="post" id="form-{{ cmd_name|slugify }}">
                             {% csrf_token %}
                             <input type="hidden" name="command_name" value="{{ cmd_name }}">
 
@@ -70,7 +70,9 @@
                                         </div>
                                     {% elif arg.type == 'select' %}
                                         <div class="form-floating">
-                                            <select class="form-select border shadow-sm" name="{{ arg.name }}" id="id_{{ cmd_name|slugify }}_{{ arg.name|slugify }}">
+                                            <select class="form-select border shadow-sm {% if arg.is_table_selector %}table-selector{% endif %} {% if arg.is_column_selector %}column-selector{% endif %}" 
+                                                    name="{{ arg.name }}" 
+                                                    id="id_{{ cmd_name|slugify }}_{{ arg.name|slugify }}">
                                                 {% for opt in arg.options %}
                                                 <option value="{{ opt }}" {% if arg.default == opt %}selected{% endif %}>{{ opt }}</option>
                                                 {% endfor %}
@@ -132,6 +134,9 @@
 </div>
 
 <script>
+// --- Schema Data injected from View ---
+const ALL_SCHEMAS = {{ schemas_json|safe }};
+
 function switchTab(cmdName) {
     const slug = cmdName.toLowerCase().replace(/ /g, '-');
     document.querySelectorAll('.command-content').forEach(el => el.style.display = 'none');
@@ -140,15 +145,66 @@ function switchTab(cmdName) {
     document.querySelectorAll('.list-group-item').forEach(el => el.classList.remove('active'));
     document.getElementById('tab-' + slug).classList.add('active');
     
-    // Reset scroll
     document.getElementById('form-container').scrollTop = 0;
+    
+    // Trigger column update for the active form
+    const form = document.getElementById('form-' + slug);
+    if (form) {
+        const tableSelect = form.querySelector('.table-selector');
+        if (tableSelect) {
+            updateColumns(tableSelect);
+        }
+    }
 }
 
-// ANSI Parsing
-window.addEventListener('DOMContentLoaded', (event) => {
+// --- Dynamic Columns Logic ---
+function updateColumns(tableSelectElement) {
+    const form = tableSelectElement.closest('form');
+    const tableName = tableSelectElement.value;
+    const columns = ALL_SCHEMAS[tableName] || [];
+    
+    // Find all column selectors in this form
+    const colSelects = form.querySelectorAll('.column-selector');
+    
+    colSelects.forEach(select => {
+        // Save current selection if possible
+        const currentVal = select.value;
+        
+        // Clear options
+        select.innerHTML = '';
+        
+        if (columns.length === 0) {
+            const opt = document.createElement('option');
+            opt.text = "(No columns found)";
+            select.add(opt);
+        } else {
+            columns.forEach(col => {
+                const opt = document.createElement('option');
+                opt.value = col;
+                opt.text = col;
+                select.add(opt);
+            });
+        }
+        
+        // Restore selection if it still exists
+        if (columns.includes(currentVal)) {
+            select.value = currentVal;
+        }
+    });
+}
+
+// Bind change events to all table selectors
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.table-selector').forEach(el => {
+        el.addEventListener('change', (e) => updateColumns(e.target));
+        // Initialize on load
+        updateColumns(el);
+    });
+    
+    // ANSI Parsing
     const term = document.getElementById('terminal-content');
     if (term) {
-        const ansi_up = new AnsiUp;
+        const ansi_up = new AnsiUp();
         const html = ansi_up.ansi_to_html(term.textContent);
         term.innerHTML = html;
     }
@@ -167,9 +223,6 @@ function handleDrop(e) {
     e.currentTarget.classList.remove('drag-over');
     const targetId = e.currentTarget.getAttribute('data-target');
     if (e.dataTransfer.files.length > 0) {
-        // Since we can't get the full path from browser for security, 
-        // we'll try to get the name if it's in project, or just the name.
-        // For a local tool, usually you'd use the file browser anyway.
         document.getElementById(targetId).value = e.dataTransfer.files[0].name;
     }
 }

@@ -61,6 +61,32 @@ def get_table_schema(table_name):
     finally:
         conn.close()
 
+def get_all_table_schemas():
+    """
+    Returns a dictionary of { table_name: [column_names...] } for all tables in the DB.
+    Used for client-side dynamic dropdowns.
+    """
+    conn = get_db_connection()
+    schemas = {}
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_wi_%'")
+        tables = [row[0] for row in cursor.fetchall()]
+        
+        for table in tables:
+            try:
+                # PRAGMA table_info returns: cid, name, type, notnull, dflt_value, pk
+                cursor.execute(f"PRAGMA table_info('{table}')")
+                columns = [col[1] for col in cursor.fetchall()]
+                schemas[table] = columns
+            except:
+                schemas[table] = []
+        return schemas
+    except Exception:
+        return {}
+    finally:
+        conn.close()
+
 def execute_custom_sql(query):
     conn = get_db_connection()
     try:
@@ -114,6 +140,26 @@ def get_db_stats():
         "status": "Active"
     }
 
+def get_table_counts():
+    conn = get_db_connection()
+    stats = []
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_wi_%'")
+        tables = [row[0] for row in cursor.fetchall()]
+        
+        for table in tables:
+            try:
+                count = cursor.execute(f"SELECT count(*) FROM {table}").fetchone()[0]
+                stats.append({"name": table, "count": count})
+            except:
+                stats.append({"name": table, "count": "Error"})
+        return stats
+    except Exception:
+        return []
+    finally:
+        conn.close()
+
 def run_cli_command(module_name: str, command_name: str, args: dict):
     """
     Executes a Wrought Iron CLI command via subprocess.
@@ -121,32 +167,18 @@ def run_cli_command(module_name: str, command_name: str, args: dict):
     """
     cmd = [sys.executable, "-X", "utf8", "src/main.py", module_name]
     
-    # Handle subcommand nesting like 'view save' -> module: collab, command: 'view save'
-    # Actually, my CLI structure in main.py is: app.add_typer(collab.app, name="collab")
-    # And inside collab.py: app.add_typer(view_app, name="view")
-    # So the CLI args are: python src/main.py collab view save ...
-    
-    parts = command_name.split() # e.g. "view save" -> ["view", "save"]
+    parts = command_name.split()
     cmd.extend(parts)
     
     for key, value in args.items():
         if not value:
             continue
             
-        # Boolean flags (checkboxes)
         if value is True or value == "on":
-            # Check if key starts with --, otherwise append it
             flag = key if key.startswith("-") else f"--{key}"
             cmd.append(flag)
             continue
             
-        # Positional arguments (don't have --name)
-        # BUT in my config I named them.
-        # If the key in args dict doesn't start with dash, it's positional?
-        # WAIT. My config keys might be "path" or "--force".
-        # If key is "path" (no dash), it's positional.
-        # If key is "--force" (dashes), it's a flag/option.
-        
         if key.startswith("-"):
             cmd.append(key)
             cmd.append(str(value))

@@ -16,14 +16,14 @@ MODULE_CONFIG = {
                 "args": [
                     {"name": "path", "type": "pos", "help": "New DB path"},
                     {"name": "--force", "type": "flag", "help": "Overwrite"},
-                    {"name": "--page-size", "type": "opt", "default": 4096, "help": "SQLite page size (4096-16384)."}
+                    {"name": "--page-size", "type": "select", "options": [4096, 8192, 16384], "default": 4096, "help": "SQLite page size."}
                 ]
             },
             "list": {
                 "help": "Show history of accessed databases.",
                 "args": [
                     {"name": "--limit", "type": "opt", "default": 10, "help": "Max rows to show."},
-                    {"name": "--sort", "type": "opt", "default": "access_time", "help": "Sort order (access_time, size)."}
+                    {"name": "--sort", "type": "select", "options": ["access_time", "size"], "default": "access_time", "help": "Sort order."}
                 ]
             },
             "alias": {
@@ -39,7 +39,7 @@ MODULE_CONFIG = {
                 "args": [
                     {"name": "target_db", "type": "pos", "help": "Target"},
                     {"name": "source_db", "type": "pos", "help": "Source"},
-                    {"name": "--strategy", "type": "opt", "default": "append", "help": "Conflict resolution strategy (append, replace, ignore)."},
+                    {"name": "--strategy", "type": "select", "options": ["append", "replace", "ignore"], "default": "append", "help": "Conflict resolution strategy."},
                     {"name": "--tables", "type": "opt", "help": "Comma-separated list of tables to merge."},
                     {"name": "--chunk-size", "type": "opt", "default": 50000, "help": "Rows per commit."}
                 ]
@@ -94,7 +94,7 @@ MODULE_CONFIG = {
                 "help": "Show column names and types.",
                 "args": [
                     {"name": "table_name", "type": "pos", "help": "Table Name"},
-                    {"name": "--format", "type": "opt", "default": "table", "help": "Output format (table, sql)."}
+                    {"name": "--format", "type": "select", "options": ["table", "sql"], "default": "table", "help": "Output format."}
                 ]
             },
             "inspect": {
@@ -153,14 +153,14 @@ MODULE_CONFIG = {
                 "args": [
                     {"name": "table_name", "type": "pos", "help": "Table"},
                     {"name": "column_name", "type": "pos", "help": "Column"},
-                    {"name": "type", "type": "pos", "help": "New Type (integer, text, real, blob)."},
-                    {"name": "--on-error", "type": "opt", "default": "fail", "help": "Handling failures (nullify, fail, ignore)."}
+                    {"name": "type", "type": "select", "options": ["integer", "text", "real", "blob"], "help": "New Type."},
+                    {"name": "--on-error", "type": "select", "options": ["fail", "nullify", "ignore"], "default": "fail", "help": "Handling failures."}
                 ]
             },
             "graph": {
                 "help": "Generate ERD text graph.",
                 "args": [
-                    {"name": "--format", "type": "opt", "default": "mermaid", "help": "Output format (mermaid, dot)."}
+                    {"name": "--format", "type": "select", "options": ["mermaid", "dot"], "default": "mermaid", "help": "Output format."}
                 ]
             }
         }
@@ -197,7 +197,7 @@ MODULE_CONFIG = {
                 "args": [
                     {"name": "table_name", "type": "pos", "help": "Table"},
                     {"name": "--where", "type": "opt", "help": "Query (e.g. age > 25)."},
-                    {"name": "--engine", "type": "opt", "default": "duckdb", "help": "Backend speed optimization."}
+                    {"name": "--engine", "type": "select", "options": ["duckdb", "polars", "pandas"], "default": "duckdb", "help": "Backend speed optimization."}
                 ]
             },
             "sql": {
@@ -205,7 +205,7 @@ MODULE_CONFIG = {
                 "args": [
                     {"name": "query", "type": "pos", "help": "SQL Query"},
                     {"name": "--params", "type": "opt", "help": "JSON string of parameters."},
-                    {"name": "--engine", "type": "opt", "default": "duckdb", "help": "Execution engine."}
+                    {"name": "--engine", "type": "select", "options": ["duckdb", "sqlite"], "default": "duckdb", "help": "Execution engine."}
                 ]
             },
             "search": {
@@ -267,7 +267,7 @@ MODULE_CONFIG = {
                     {"name": "index", "type": "pos", "help": "Index"},
                     {"name": "columns", "type": "pos", "help": "Cols"},
                     {"name": "values", "type": "pos", "help": "Vals"},
-                    {"name": "--func", "type": "opt", "default": "mean", "help": "Aggregation function."}
+                    {"name": "--func", "type": "select", "options": ["mean", "sum", "count", "min", "max"], "default": "mean", "help": "Aggregation function."}
                 ]
             },
             "describe": {
@@ -292,7 +292,7 @@ MODULE_CONFIG = {
                     {"name": "table_name", "type": "pos", "help": "Table"},
                     {"name": "row", "type": "pos", "help": "Row"},
                     {"name": "col", "type": "pos", "help": "Col"},
-                    {"name": "--normalize", "type": "opt", "help": "Normalize results (index, columns, all)."},
+                    {"name": "--normalize", "type": "select", "options": ["index", "columns", "all"], "help": "Normalize results."},
                     {"name": "--margins", "type": "flag", "help": "Show margins."}
                 ]
             },
@@ -348,7 +348,7 @@ MODULE_CONFIG = {
                     {"name": "table_name", "type": "pos", "help": "Table"},
                     {"name": "col", "type": "pos", "help": "Col"},
                     {"name": "--neighbors", "type": "opt", "default": 5, "help": "Number of neighbors."},
-                    {"name": "--weights", "type": "opt", "default": "uniform", "help": "Weight function."}
+                    {"name": "--weights", "type": "select", "options": ["uniform", "distance"], "default": "uniform", "help": "Weight function."}
                 ]
             },
             "dedupe": {
@@ -459,7 +459,9 @@ MODULE_CONFIG = {
                     {"name": "lat_col", "type": "pos", "help": "Lat"},
                     {"name": "lon_col", "type": "pos", "help": "Lon"},
                     {"name": "--eps", "type": "opt", "default": 0.5, "help": "Max distance (km)."},
-                    {"name": "--min-samples", "type": "opt", "default": 5, "help": "Min points."}
+                    {"name": "--min-samples", "type": "opt", "default": 5, "help": "Min points."},
+                    {"name": "--metric", "type": "select", "options": ["euclidean", "haversine"], "default": "euclidean", "help": "Distance metric."},
+                    {"name": "--algorithm", "type": "select", "options": ["auto", "ball_tree", "kd_tree", "brute"], "default": "auto", "help": "Algorithm."}
                 ]
             },
             "centroid": {
@@ -525,7 +527,7 @@ MODULE_CONFIG = {
                 "help": "Generate Integrity Fingerprint.",
                 "args": [
                     {"name": "table_name", "type": "pos", "help": "Table"},
-                    {"name": "--algo", "type": "opt", "default": "sha256"},
+                    {"name": "--algo", "type": "select", "options": ["sha256", "sha512"], "default": "sha256"},
                     {"name": "--salt", "type": "opt", "default": ""}
                 ]
             },
@@ -546,7 +548,7 @@ MODULE_CONFIG = {
                 "args": [
                     {"name": "table_name", "type": "pos", "help": "Table"},
                     {"name": "col_name", "type": "pos", "help": "Col"},
-                    {"name": "--method", "type": "opt", "default": "mask"},
+                    {"name": "--method", "type": "select", "options": ["mask", "hash", "redact"], "default": "mask"},
                     {"name": "--chars", "type": "opt", "default": 4}
                 ]
             },
@@ -599,7 +601,7 @@ MODULE_CONFIG = {
                     {"name": "table_name", "type": "pos", "help": "Table"},
                     {"name": "target_col", "type": "pos", "help": "Target"},
                     {"name": "feature_cols", "type": "pos", "help": "Features (comma-separated)"},
-                    {"name": "--model-type", "type": "opt", "default": "random_forest", "help": "Model type."},
+                    {"name": "--model-type", "type": "select", "options": ["random_forest", "logistic_regression"], "default": "random_forest", "help": "Model type."},
                     {"name": "--output-model", "type": "opt", "help": "Output model path."},
                     {"name": "--test-size", "type": "opt", "default": 0.2},
                     {"name": "--n-estimators", "type": "opt", "default": 100}
@@ -611,7 +613,7 @@ MODULE_CONFIG = {
                     {"name": "table_name", "type": "pos", "help": "Table"},
                     {"name": "target_col", "type": "pos", "help": "Target"},
                     {"name": "feature_cols", "type": "pos", "help": "Features (comma-separated)"},
-                    {"name": "--model-type", "type": "opt", "default": "linear_regression"},
+                    {"name": "--model-type", "type": "select", "options": ["linear_regression", "ridge", "random_forest"], "default": "linear_regression"},
                     {"name": "--output-model", "type": "opt", "help": "Output model path."},
                     {"name": "--test-size", "type": "opt", "default": 0.2}
                 ]
@@ -633,7 +635,7 @@ MODULE_CONFIG = {
                     {"name": "model_path", "type": "pos", "help": "Model Path"},
                     {"name": "target_col", "type": "pos", "help": "Target"},
                     {"name": "feature_cols", "type": "pos", "help": "Features"},
-                    {"name": "--metrics", "type": "opt", "default": "accuracy", "help": "Metrics (e.g. accuracy, r2)."}
+                    {"name": "--metrics", "type": "select", "options": ["accuracy", "precision", "recall", "f1", "r2", "mae", "mse"], "default": "accuracy", "help": "Metrics."}
                 ]
             },
             "feature-importance": {
@@ -649,6 +651,7 @@ MODULE_CONFIG = {
                     {"name": "table_name", "type": "pos", "help": "Table"},
                     {"name": "feature_cols", "type": "pos", "help": "Features"},
                     {"name": "--k", "type": "opt", "default": 3},
+                    {"name": "--init", "type": "select", "options": ["k-means++", "random"], "default": "k-means++"},
                     {"name": "--output-col", "type": "opt", "default": "cluster_id"}
                 ]
             },
@@ -689,7 +692,7 @@ MODULE_CONFIG = {
             },
             "schedule list": {
                 "help": "List active automated tasks.",
-                "args": [{"name": "--status", "type": "opt", "help": "Filter status"}]
+                "args": [{"name": "--status", "type": "select", "options": ["active", "paused"], "help": "Filter status"}]
             },
             "schedule delete": {
                 "help": "Remove a task.",
@@ -738,7 +741,7 @@ MODULE_CONFIG = {
             },
             "export-status": {
                 "help": "Output system health.",
-                "args": [{"name": "--format", "type": "opt", "default": "json"}]
+                "args": [{"name": "--format", "type": "select", "options": ["json", "xml"], "default": "json"}]
             }
         }
     },
@@ -768,7 +771,7 @@ MODULE_CONFIG = {
             "config export": {
                 "help": "Export configuration to JSON.",
                 "args": [
-                    {"name": "cmd", "type": "pos", "default": "project", "help": "Scope"},
+                    {"name": "cmd", "type": "select", "options": ["project", "user"], "default": "project", "help": "Scope"},
                     {"name": "file", "type": "pos", "help": "Output File"},
                     {"name": "--include-secrets", "type": "flag"}
                 ]
@@ -777,7 +780,7 @@ MODULE_CONFIG = {
                 "help": "Import settings.",
                 "args": [
                     {"name": "file_path", "type": "pos", "help": "File Path"},
-                    {"name": "--scope", "type": "opt", "default": "project"}
+                    {"name": "--scope", "type": "select", "options": ["project", "user"], "default": "project"}
                 ]
             },
             "recipe bundle": {
@@ -821,7 +824,7 @@ MODULE_CONFIG = {
                 "args": [
                     {"name": "table_name", "type": "pos", "help": "Table"},
                     {"name": "--out", "type": "opt", "default": "report.html", "help": "Output File"},
-                    {"name": "--layout", "type": "opt", "default": "widescreen"}
+                    {"name": "--layout", "type": "select", "options": ["widescreen", "vertical"], "default": "widescreen"}
                 ]
             },
             "diff": {
@@ -870,7 +873,7 @@ MODULE_CONFIG = {
             },
             "dependencies": {
                 "help": "Lineage DAG.",
-                "args": [{"name": "--format", "type": "opt", "default": "png"}]
+                "args": [{"name": "--format", "type": "select", "options": ["png", "svg"], "default": "png"}]
             },
             "profile": {
                 "help": "JSON Stats Dump.",
@@ -898,7 +901,7 @@ MODULE_CONFIG = {
                     {"name": "table_name", "type": "pos", "help": "Table"},
                     {"name": "cat", "type": "pos", "help": "Category Col"},
                     {"name": "num", "type": "pos", "help": "Numeric Col"},
-                    {"name": "--agg", "type": "opt", "help": "Aggregation"},
+                    {"name": "--agg", "type": "select", "options": ["mean", "sum", "count", "min", "max", "median"], "help": "Aggregation"},
                     {"name": "--stack", "type": "opt", "help": "Stack Col"},
                     {"name": "--out", "type": "opt", "help": "Output File"},
                     {"name": "--title", "type": "opt", "help": "Title"},
@@ -911,7 +914,7 @@ MODULE_CONFIG = {
                     {"name": "table_name", "type": "pos", "help": "Table"},
                     {"name": "cat", "type": "pos", "help": "Category Col"},
                     {"name": "num", "type": "pos", "help": "Numeric Col"},
-                    {"name": "--agg", "type": "opt", "help": "Aggregation"},
+                    {"name": "--agg", "type": "select", "options": ["mean", "sum", "count", "min", "max", "median"], "help": "Aggregation"},
                     {"name": "--out", "type": "opt", "help": "Output File"}
                 ]
             },

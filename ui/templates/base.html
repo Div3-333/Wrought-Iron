@@ -14,22 +14,33 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
-    <!-- ANSI parsing library -->
     <script src="https://cdn.jsdelivr.net/npm/ansi_up@5.2.1/ansi_up.min.js"></script>
     
     <link rel="stylesheet" href="{% static 'styles.css' %}">
 </head>
-<body>
+<body data-theme="nature">
 
     <div class="app-container">
         <!-- Sidebar -->
         <nav class="sidebar glass-panel animate__animated animate__fadeInLeft">
-            <div class="brand-logo">
-                <i class="fas fa-leaf me-2 text-gradient-primary"></i>
-                <span>WROUGHT IRON</span>
+            <div class="brand-logo justify-content-between">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-leaf me-2 text-gradient-primary"></i>
+                    <span>WROUGHT IRON</span>
+                </div>
             </div>
             
-            <ul class="nav flex-column mt-4">
+            <div class="mb-3 px-2">
+                <select class="form-select form-select-sm border-0 bg-transparent text-muted fw-bold" id="themeSelector" onchange="setTheme(this.value)">
+                    <option value="nature">🌿 Nature</option>
+                    <option value="oceanic">🌊 Oceanic</option>
+                    <option value="midnight">🔮 Midnight</option>
+                    <option value="cyberpunk">🦾 Cyberpunk</option>
+                    <option value="coffee">☕ Coffee</option>
+                </select>
+            </div>
+            
+            <ul class="nav flex-column mt-2">
                 <li class="nav-item">
                     <a href="{% url 'index' %}" class="nav-link {% if page == 'dashboard' %}active{% endif %}">
                         <i class="fas fa-home-alt"></i>
@@ -90,5 +101,18 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'main.js' %}"></script>
+    <script>
+        function setTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('wi-theme', theme);
+        }
+        
+        // Load saved theme
+        const savedTheme = localStorage.getItem('wi-theme');
+        if (savedTheme) {
+            document.body.setAttribute('data-theme', savedTheme);
+            document.getElementById('themeSelector').value = savedTheme;
+        }
+    </script>
 </body>
 </html>
