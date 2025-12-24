@@ -258,11 +258,6 @@ fn verify_license(key: String, endpoint: Option<String>) -> bool {
     // 1. Get Unique Machine ID
     let machine_id = get_machine_id();
     
-    // DEV BYPASS - Keep it for now but maybe restrict it
-    if key == "DEV-KEY-123" {
-        return true;
-    }
-
     // A license key in this system is: base64(data) + "." + base64(signature)
     // where data is JSON: {"machine_id": "...", "expiry": "2025-12-31"}
     
