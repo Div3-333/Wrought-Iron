@@ -3,9 +3,13 @@ import pandas as pd
 import json
 import sys
 import os
-import subprocess
+import io
+from contextlib import redirect_stdout, redirect_stderr
 from wrought_iron.cli.utils import _get_active_db
 from pathlib import Path
+
+# Use the Typer app directly
+from wrought_iron.main import app as wi_app
 
 def get_active_db_path():
     try:
@@ -162,13 +166,12 @@ def get_table_counts():
 
 def run_cli_command(module_name: str, command_name: str, args: dict):
     """
-    Executes a Wrought Iron CLI command via subprocess.
-    Constructs: python src/main.py <module_name> <command_name> [args]
+    Executes a Wrought Iron CLI command by calling the Typer app directly.
+    Captures stdout and stderr.
     """
-    cmd = [sys.executable, "-X", "utf8", "src/main.py", module_name]
-    
-    parts = command_name.split()
-    cmd.extend(parts)
+    # Build command list for Typer
+    cmd_list = [module_name]
+    cmd_list.extend(command_name.split())
     
     for key, value in args.items():
         if not value:
@@ -176,38 +179,32 @@ def run_cli_command(module_name: str, command_name: str, args: dict):
             
         if value is True or value == "on":
             flag = key if key.startswith("-") else f"--{key}"
-            cmd.append(flag)
+            cmd_list.append(flag)
             continue
             
         if key.startswith("-"):
-            cmd.append(key)
-            cmd.append(str(value))
+            cmd_list.append(key)
+            cmd_list.append(str(value))
         else:
-            cmd.append(str(value))
+            # Check if it should be a flag (e.g. from UI)
+            cmd_list.append(str(value))
 
+    f_stdout = io.StringIO()
+    f_stderr = io.StringIO()
+    
+    success = True
     try:
-        # Set environment to force UTF-8 for CLI output
-        env = os.environ.copy()
-        env["PYTHONIOENCODING"] = "utf-8"
-        
-        # Run command from project root
-        result = subprocess.run(
-            cmd, 
-            capture_output=True, 
-            text=True, 
-            encoding='utf-8',
-            env=env,
-            cwd=str(Path(__file__).parent.parent) # Go up to repo root
-        )
-        return {
-            "success": result.returncode == 0,
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-            "command": " ".join(cmd)
-        }
+        with redirect_stdout(f_stdout), redirect_stderr(f_stderr):
+            # We use wi_app(cmd_list) to trigger Typer's parsing
+            # standalone_mode=False prevents it from calling sys.exit()
+            wi_app(cmd_list, standalone_mode=False)
     except Exception as e:
-        return {
-            "success": False,
-            "stderr": str(e),
-            "command": " ".join(cmd)
-        }
+        success = False
+        f_stderr.write(str(e))
+
+    return {
+        "success": success,
+        "stdout": f_stdout.getvalue(),
+        "stderr": f_stderr.getvalue(),
+        "command": "wi " + " ".join(cmd_list)
+    }

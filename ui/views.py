@@ -213,3 +213,40 @@ def file_browser_api(request):
         })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+def license_required(request):
+    import wrought_iron_core
+    
+    # Get machine ID to show to user
+    try:
+        machine_id = wrought_iron_core.get_machine_id()
+    except:
+        machine_id = "Unknown"
+
+    if request.method == 'POST':
+        key = request.POST.get('license_key')
+        if key:
+            # Try to verify
+            from django.conf import settings
+            if wrought_iron_core.verify_license(key):
+                request.session['is_licensed'] = True
+                # Save to persistent file
+                try:
+                    license_file = settings.DATABASE_PATH.parent / 'license.key'
+                    with open(license_file, 'w') as f:
+                        f.write(key)
+                except:
+                    pass
+                return redirect('index')
+            else:
+                return render(request, 'license_required.html', {
+                    'error': 'Invalid License Key', 
+                    'hide_sidebar': True,
+                    'machine_id': machine_id
+                })
+    
+    return render(request, 'license_required.html', {
+        'hide_sidebar': True, 
+        'machine_id': machine_id
+    })
+    

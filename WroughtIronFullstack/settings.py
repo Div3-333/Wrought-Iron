@@ -10,11 +10,28 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import sys
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+if getattr(sys, 'frozen', False):
+    # Running in a PyInstaller bundle
+    BASE_DIR = Path(sys._MEIPASS)
+    # For persistent data, use a directory in the user's home folder
+    DATA_DIR = Path.home() / ".wi"
+    DATA_DIR.mkdir(exist_ok=True)
+    DATABASE_PATH = DATA_DIR / 'db.sqlite3'
+    STATIC_ROOT = BASE_DIR / 'static'
+else:
+    # Running normally
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    DATABASE_PATH = BASE_DIR / 'db.sqlite3'
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# Add src to sys.path to allow imports from wrought_iron
+if not getattr(sys, 'frozen', False):
+    sys.path.append(str(BASE_DIR / 'src'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -23,9 +40,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-u%!4d7)f1+_yfvr4!t9$c(#vu3q3s*7!(*x#ta+d-c9b!-s%&3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False # Set to False for production
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -42,12 +59,14 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'WroughtIronFullstack.middleware.LicenseMiddleware',
 ]
 
 ROOT_URLCONF = 'WroughtIronFullstack.urls'
@@ -70,6 +89,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'WroughtIronFullstack.wsgi.application'
 
+# License settings
+LICENSE_KEY = None
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -77,7 +99,7 @@ WSGI_APPLICATION = 'WroughtIronFullstack.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DATABASE_PATH,
     }
 }
 
@@ -117,6 +139,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+
+STATICFILES_DIRS = [
+    BASE_DIR / "ui" / "static",
+]
+
+# Enable Whitenoise
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = False
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

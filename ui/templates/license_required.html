@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
+                <h4 class="mb-0">License Activation Required</h4>
+            </div>
+            <div class="card-body">
+                <p>This installation of Wrought Iron is locked. Please provide a valid license key to proceed.</p>
+                
+                {% if error %}
+                <div class="alert alert-danger">
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="license_key" class="form-label">License Key</label>
+                        <input type="text" class="form-control" id="license_key" name="license_key" required placeholder="XXXX-XXXX-XXXX-XXXX">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Activate License</button>
+                </form>
+
+                <div class="mt-4 p-3 bg-light rounded border">
+                    <small class="text-muted d-block mb-1">Your Unique Machine ID:</small>
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control font-monospace" value="{{ machine_id }}" readonly id="machineId">
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyMachineId()">Copy</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-muted text-center">
+                Contact your administrator with your Machine ID to obtain a license.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyMachineId() {
+    var copyText = document.getElementById("machineId");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(copyText.value);
+    alert("Machine ID copied to clipboard");
+}
+</script>
+{% endblock %}

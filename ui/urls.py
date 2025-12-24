@@ -10,4 +10,5 @@ urlpatterns = [
     path('query/', views.query, name='query'),
     path('module/<str:module_name>/', views.module_view, name='module_view'),
     path('api/files/', views.file_browser_api, name='file_browser_api'),
+    path('license-required/', views.license_required, name='license_required'),
 ]

@@ -6,6 +6,8 @@ use sha2::{Sha256, Digest};
 use std::collections::HashMap;
 use serde_json::Value;
 use rstar::{RTree, PointDistance, RTreeObject, AABB};
+use sys_info;
+use ureq;
 
 // --- GEO MODULE ---
 
@@ -235,6 +237,104 @@ fn calculate_stats_batch(data: Vec<f64>) -> HashMap<String, f64> {
     stats
 }
 
+// --- LICENSE MODULE ---
+
+use ed25519_dalek::{Verifier, Signature, VerifyingKey};
+use std::convert::TryInto;
+use chrono::Utc;
+
+// Public key for verifying licenses (In a real app, keep this secure but it's okay to bundle)
+// This is a dummy example key. In production, use your actual public key.
+const PUBLIC_KEY_BASE64: &str = "uj3j2FlAFFDG94zD7u7LbL/ZlArR7VZUzSdLV5T2kQs="; 
+
+#[pyfunction]
+fn get_machine_id() -> String {
+    machine_uid::get().unwrap_or_else(|_| "unknown_machine".to_string())
+}
+
+#[pyfunction]
+#[pyo3(signature = (key, endpoint=None))]
+fn verify_license(key: String, endpoint: Option<String>) -> bool {
+    // 1. Get Unique Machine ID
+    let machine_id = get_machine_id();
+    
+    // DEV BYPASS - Keep it for now but maybe restrict it
+    if key == "DEV-KEY-123" {
+        return true;
+    }
+
+    // A license key in this system is: base64(data) + "." + base64(signature)
+    // where data is JSON: {"machine_id": "...", "expiry": "2025-12-31"}
+    
+    let parts: Vec<&str> = key.split('.').collect();
+    if parts.len() == 2 {
+        // --- OFFLINE VERIFICATION PATH ---
+        let data_b64 = parts[0];
+        let sig_b64 = parts[1];
+
+        let data_bytes = match base64::decode(data_b64) {
+            Ok(b) => b,
+            Err(_) => return false,
+        };
+        let sig_bytes = match base64::decode(sig_b64) {
+            Ok(b) => b,
+            Err(_) => return false,
+        };
+
+        // Load public key
+        let pub_key_bytes = match base64::decode(PUBLIC_KEY_BASE64) {
+            Ok(b) => b,
+            Err(_) => return false,
+        };
+        let public_key = match VerifyingKey::from_bytes(&pub_key_bytes.try_into().unwrap_or([0; 32])) {
+            Ok(k) => k,
+            Err(_) => return false,
+        };
+
+        // Verify signature
+        let sig_array: [u8; 64] = match sig_bytes.try_into() {
+            Ok(a) => a,
+            Err(_) => return false,
+        };
+        let signature = Signature::from_bytes(&sig_array);
+
+        if public_key.verify(&data_bytes, &signature).is_ok() {
+            // Signature is valid, now check content
+            let v: Value = serde_json::from_slice(&data_bytes).unwrap_or(Value::Null);
+            if let Some(target_mid) = v["machine_id"].as_str() {
+                if target_mid != machine_id {
+                    return false; // Not for this machine
+                }
+            }
+            if let Some(expiry) = v["expiry"].as_str() {
+                if let Ok(expiry_date) = chrono::DateTime::parse_from_rfc3339(expiry) {
+                    if expiry_date < Utc::now() {
+                        return false; // Expired
+                    }
+                }
+            }
+            return true;
+        }
+    }
+
+    // --- ONLINE VERIFICATION FALLBACK ---
+    let url = endpoint.unwrap_or("https://license-server-exc6.onrender.com/verify".to_string());
+    let body = serde_json::json!({
+        "license_key": key,
+        "machine_id": machine_id
+    });
+
+    match ureq::post(&url).send_json(body) {
+        Ok(response) => {
+            if response.status() == 200 {
+                return true; 
+            }
+            false
+        },
+        Err(_) => false 
+    }
+}
+
 // --- MODULE DEFINITION ---
 
 #[pymodule]
@@ -251,7 +351,10 @@ fn wrought_iron_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(regex_replace_batch, m)?)?;
     m.add_function(wrap_pyfunction!(validate_schema_batch, m)?)?;
     m.add_function(wrap_pyfunction!(detect_json_batch, m)?)?;
-    m.add_function(wrap_pyfunction!(search_batch, m)?)?;
-    m.add_function(wrap_pyfunction!(calculate_stats_batch, m)?)?;
-    Ok(())
-}
+        m.add_function(wrap_pyfunction!(search_batch, m)?)?;
+        m.add_function(wrap_pyfunction!(calculate_stats_batch, m)?)?;
+        m.add_function(wrap_pyfunction!(verify_license, m)?)?;
+        m.add_function(wrap_pyfunction!(get_machine_id, m)?)?;
+        Ok(())
+    }
+    
